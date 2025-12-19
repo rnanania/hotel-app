@@ -1,0 +1,112 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">{{ isEditMode ? 'Edit Reservation' : 'New Reservation' }}</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
+            <!-- Guest Name -->
+            <div class="mb-3">
+              <label for="guestName" class="form-label">Guest Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="guestName"
+                formControlName="guestName"
+                [class.is-invalid]="guestName?.invalid && guestName?.touched"
+                placeholder="Enter guest name"
+              />
+              <div class="invalid-feedback" *ngIf="guestName?.invalid && guestName?.touched">
+                <div *ngIf="guestName?.errors?.['required']">Guest name is required</div>
+                <div *ngIf="guestName?.errors?.['minlength']">Guest name must be at least 2 characters</div>
+              </div>
+            </div>
+
+            <!-- Guest Email -->
+            <div class="mb-3">
+              <label for="guestEmail" class="form-label">Guest Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="guestEmail"
+                formControlName="guestEmail"
+                [class.is-invalid]="guestEmail?.invalid && guestEmail?.touched"
+                placeholder="Enter guest email"
+              />
+              <div class="invalid-feedback" *ngIf="guestEmail?.invalid && guestEmail?.touched">
+                <div *ngIf="guestEmail?.errors?.['required']">Email is required</div>
+                <div *ngIf="guestEmail?.errors?.['email']">Please enter a valid email address</div>
+              </div>
+            </div>
+
+            <!-- Check-in Date -->
+            <div class="mb-3">
+              <label for="checkInDate" class="form-label">Check-in Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="checkInDate"
+                formControlName="checkInDate"
+                [class.is-invalid]="checkInDate?.invalid && checkInDate?.touched"
+              />
+              <div class="invalid-feedback" *ngIf="checkInDate?.invalid && checkInDate?.touched">
+                Check-in date is required
+              </div>
+            </div>
+
+            <!-- Check-out Date -->
+            <div class="mb-3">
+              <label for="checkOutDate" class="form-label">Check-out Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="checkOutDate"
+                formControlName="checkOutDate"
+                [class.is-invalid]="checkOutDate?.invalid && checkOutDate?.touched"
+              />
+              <div class="invalid-feedback" *ngIf="checkOutDate?.invalid && checkOutDate?.touched">
+                Check-out date is required
+              </div>
+            </div>
+
+            <!-- Date Range Validation Error -->
+            <div class="alert alert-danger" *ngIf="reservationForm.errors?.['invalidDateRange'] && reservationForm.touched">
+              Check-out date must be after check-in date
+            </div>
+            <div class="alert alert-danger" *ngIf="reservationForm.errors?.['pastDate'] && reservationForm.touched">
+              Check-in date cannot be in the past
+            </div>
+
+            <!-- Room Number -->
+            <div class="mb-3">
+              <label for="roomNumber" class="form-label">Room Number</label>
+              <input
+                type="number"
+                class="form-control"
+                id="roomNumber"
+                formControlName="roomNumber"
+                [class.is-invalid]="roomNumber?.invalid && roomNumber?.touched"
+                placeholder="Enter room number"
+                min="1"
+              />
+              <div class="invalid-feedback" *ngIf="roomNumber?.invalid && roomNumber?.touched">
+                <div *ngIf="roomNumber?.errors?.['required']">Room number is required</div>
+                <div *ngIf="roomNumber?.errors?.['min']">Room number must be at least 1</div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex gap-2 justify-content-end">
+              <a routerLink="/reservations" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary" [disabled]="reservationForm.invalid">
+                {{ isEditMode ? 'Update Reservation' : 'Create Reservation' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

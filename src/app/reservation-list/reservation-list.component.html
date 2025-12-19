@@ -1,0 +1,66 @@
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Reservations</h2>
+        <a routerLink="/reservations/new" class="btn btn-primary">
+          New Reservation
+        </a>
+      </div>
+
+      <div *ngIf="reservations.length === 0" class="alert alert-info">
+        No reservations found. <a routerLink="/reservations/new" class="alert-link">Create your first reservation</a>
+      </div>
+
+      <div *ngIf="reservations.length > 0" class="card shadow">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Guest Name</th>
+                  <th>Guest Email</th>
+                  <th>Room Number</th>
+                  <th>Check-in Date</th>
+                  <th>Check-out Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let reservation of reservations">
+                  <td>{{ reservation.id }}</td>
+                  <td>{{ reservation.guestName }}</td>
+                  <td>{{ reservation.guestEmail }}</td>
+                  <td>{{ reservation.roomNumber }}</td>
+                  <td>{{ formatDate(reservation.checkInDate) }}</td>
+                  <td>{{ formatDate(reservation.checkOutDate) }}</td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="editReservation(reservation.id)"
+                        title="Edit Reservation"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteReservation(reservation.id)"
+                        title="Delete Reservation"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
