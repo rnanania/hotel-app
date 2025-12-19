@@ -13,7 +13,7 @@ import { ReservationService } from '../reservation/reservation.service';
 export class ReservationFormComponent implements OnInit, OnDestroy {
   reservationForm!: FormGroup;
   isEditMode = false;
-  reservationId: number | null = null;
+  reservationId: string | null = null;
   private routeSubscription?: Subscription;
 
   constructor(
@@ -31,7 +31,7 @@ export class ReservationFormComponent implements OnInit, OnDestroy {
       const id = params.get('id');
       if (id) {
         this.isEditMode = true;
-        this.reservationId = parseInt(id, 10);
+        this.reservationId = id;
         this.loadReservation(this.reservationId);
       } else {
         this.isEditMode = false;
@@ -64,24 +64,27 @@ export class ReservationFormComponent implements OnInit, OnDestroy {
     this.reservationForm.markAsUntouched();
   }
 
-  loadReservation(id: number): void {
-    const reservation = this.reservationService.getReservationById(id);
-    if (reservation) {
-      // Format dates for input fields (YYYY-MM-DD)
-      const checkInDate = new Date(reservation.checkInDate);
-      const checkOutDate = new Date(reservation.checkOutDate);
-      
-      this.reservationForm.patchValue({
-        guestName: reservation.guestName,
-        guestEmail: reservation.guestEmail,
-        checkInDate: this.formatDateForInput(checkInDate),
-        checkOutDate: this.formatDateForInput(checkOutDate),
-        roomNumber: reservation.roomNumber
-      });
-    } else {
-      // Reservation not found, redirect to list
-      this.router.navigate(['/reservations']);
-    }
+  loadReservation(id: string): void {
+    this.reservationService.getReservationById(id).subscribe({
+      next: (reservation) => {
+        // Format dates for input fields (YYYY-MM-DD)
+        const checkInDate = new Date(reservation.checkInDate);
+        const checkOutDate = new Date(reservation.checkOutDate);
+        
+        this.reservationForm.patchValue({
+          guestName: reservation.guestName,
+          guestEmail: reservation.guestEmail,
+          checkInDate: this.formatDateForInput(checkInDate),
+          checkOutDate: this.formatDateForInput(checkOutDate),
+          roomNumber: reservation.roomNumber
+        });
+      },
+      error: (error) => {
+        console.error('Error loading reservation:', error);
+        // Reservation not found, redirect to list
+        this.router.navigate(['/reservations']);
+      }
+    });
   }
 
   private formatDateForInput(date: Date): string {
@@ -124,7 +127,7 @@ export class ReservationFormComponent implements OnInit, OnDestroy {
     if (this.reservationForm.valid) {
       const formValue = this.reservationForm.value;
       const reservation: Reservation = {
-        id: this.isEditMode ? this.reservationId! : 0,
+        id: this.isEditMode ? this.reservationId! : '',
         guestName: formValue.guestName,
         guestEmail: formValue.guestEmail,
         checkInDate: this.parseDateFromInput(formValue.checkInDate),
@@ -133,12 +136,26 @@ export class ReservationFormComponent implements OnInit, OnDestroy {
       };
 
       if (this.isEditMode) {
-        this.reservationService.updateReservation(reservation);
+        this.reservationService.updateReservation(reservation).subscribe({
+          next: () => {
+            this.router.navigate(['/reservations']);
+          },
+          error: (error) => {
+            console.error('Error updating reservation:', error);
+            alert('Failed to update reservation. Please try again.');
+          }
+        });
       } else {
-        this.reservationService.addReservation(reservation);
+        this.reservationService.addReservation(reservation).subscribe({
+          next: () => {
+            this.router.navigate(['/reservations']);
+          },
+          error: (error) => {
+            console.error('Error creating reservation:', error);
+            alert('Failed to create reservation. Please try again.');
+          }
+        });
       }
-      
-      this.router.navigate(['/reservations']);
     } else {
       this.markFormGroupTouched(this.reservationForm);
     }

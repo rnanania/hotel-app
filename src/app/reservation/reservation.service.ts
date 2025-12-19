@@ -1,36 +1,18 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Reservation } from '../models/reservation';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReservationService {
-  private readonly STORAGE_KEY = 'hotel_reservations';
-  private reservations: Reservation[] = [];
+  private readonly apiUrl = 'http://localhost:3000/reservations';
 
-  constructor() {
-    this.loadFromStorage();
-  }
+  constructor(private http: HttpClient) { }
 
-  private loadFromStorage(): void {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // Convert date strings back to Date objects in local timezone
-        this.reservations = parsed.map((r: any) => ({
-          ...r,
-          checkInDate: this.parseDateFromStorage(r.checkInDate),
-          checkOutDate: this.parseDateFromStorage(r.checkOutDate)
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading reservations from localStorage:', error);
-      this.reservations = [];
-    }
-  }
-
-  private parseDateFromStorage(dateValue: string | Date): Date {
+  private parseDateFromServer(dateValue: string | Date): Date {
     // If it's already a Date object (shouldn't happen, but handle it)
     if (dateValue instanceof Date) {
       return dateValue;
@@ -52,51 +34,67 @@ export class ReservationService {
     return new Date(dateValue);
   }
 
-  private formatDateForStorage(date: Date): string {
-    // Store as YYYY-MM-DD to avoid timezone issues
+  private formatDateForServer(date: Date): string {
+    // Send as YYYY-MM-DD to avoid timezone issues
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
-  private saveToStorage(): void {
-    try {
-      // Serialize dates as date-only strings to avoid timezone issues
-      const serialized = this.reservations.map(r => ({
-        ...r,
-        checkInDate: this.formatDateForStorage(r.checkInDate),
-        checkOutDate: this.formatDateForStorage(r.checkOutDate)
-      }));
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(serialized));
-    } catch (error) {
-      console.error('Error saving reservations to localStorage:', error);
-    }
+  private transformReservation(reservation: any): Reservation {
+    return {
+      ...reservation,
+      checkInDate: this.parseDateFromServer(reservation.checkInDate),
+      checkOutDate: this.parseDateFromServer(reservation.checkOutDate)
+    };
   }
 
-  addReservation(reservation: Reservation): void {
-    this.reservations.push({ ...reservation, id: Date.now() });
-    this.saveToStorage();
+  private transformReservationForServer(reservation: Reservation): any {
+    return {
+      ...reservation,
+      checkInDate: this.formatDateForServer(reservation.checkInDate),
+      checkOutDate: this.formatDateForServer(reservation.checkOutDate)
+    };
   }
 
-  getReservations(): Reservation[] {
-    return this.reservations;
+  private transformReservationForCreate(reservation: Reservation): any {
+    // Exclude id when creating a new reservation (server will generate it)
+    const { id, ...reservationWithoutId } = reservation;
+    return {
+      ...reservationWithoutId,
+      checkInDate: this.formatDateForServer(reservation.checkInDate),
+      checkOutDate: this.formatDateForServer(reservation.checkOutDate)
+    };
   }
 
-  getReservationById(id: number): Reservation | undefined {
-    return this.reservations.find(r => r.id === id);
+  getReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(this.apiUrl).pipe(
+      map(reservations => reservations.map(r => this.transformReservation(r)))
+    );
   }
 
-  updateReservation(reservation: Reservation): void {
-    const index = this.reservations.findIndex(r => r.id === reservation.id);
-    if (index !== -1) {
-      this.reservations[index] = reservation;
-      this.saveToStorage();
-    }
+  getReservationById(id: string): Observable<Reservation> {
+    return this.http.get<Reservation>(`${this.apiUrl}/${id}`).pipe(
+      map(reservation => this.transformReservation(reservation))
+    );
   }
 
-  deleteReservation(id: number): void {
-    this.reservations = this.reservations.filter(r => r.id !== id);
-    this.saveToStorage();
+  addReservation(reservation: Reservation): Observable<Reservation> {
+    const payload = this.transformReservationForCreate(reservation);
+    return this.http.post<Reservation>(this.apiUrl, payload).pipe(
+      map(reservation => this.transformReservation(reservation))
+    );
+  }
+
+  updateReservation(reservation: Reservation): Observable<Reservation> {
+    const payload = this.transformReservationForServer(reservation);
+    return this.http.put<Reservation>(`${this.apiUrl}/${reservation.id}`, payload).pipe(
+      map(reservation => this.transformReservation(reservation))
+    );
+  }
+
+  deleteReservation(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

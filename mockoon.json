@@ -1,0 +1,102 @@
+{
+    "uuid": "d6cd9b5c-14b2-4460-9a5c-b0466619ac47",
+    "lastMigration": 33,
+    "name": "Hotel Reservation App",
+    "endpointPrefix": "",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "95b5dcac-1794-4f48-a974-ee408edf0fb1",
+            "type": "crud",
+            "documentation": "",
+            "method": "",
+            "endpoint": "reservations",
+            "responses": [
+                {
+                    "uuid": "89c9af63-0720-446b-b9d5-bc37ea372dac",
+                    "body": "{}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "DATABUCKET",
+                    "filePath": "",
+                    "databucketID": "0z4f",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "95b5dcac-1794-4f48-a974-ee408edf0fb1"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+        },
+        {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+        },
+        {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [
+        {
+            "uuid": "b70f4668-bfcc-444d-b65e-13f394c1ec92",
+            "id": "0z4f",
+            "name": "reservations",
+            "documentation": "",
+            "value": "[\n  {{#repeat 20}}\n  {\n    \"id\": \"{{faker 'string.uuid'}}\",\n    \"guestName\": \"{{faker 'internet.userName'}}\",\n    \"guestEmail\": \"{{faker 'internet.email'}}\",\n    \"roomNumber\": {{faker 'number.int' min=100 max=500}},\n    \"checkInDate\": \"{{date '2025-12-21' '2025-12-26' 'yyyy-MM-dd'}}\",\n    \"checkOutDate\": \"{{date '2025-12-27' '2025-12-31' 'yyyy-MM-dd'}}\"\n  }\n  {{/repeat}}\n]"
+        }
+    ],
+    "callbacks": []
+}

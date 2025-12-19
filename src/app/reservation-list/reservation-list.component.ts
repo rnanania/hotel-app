@@ -21,17 +21,32 @@ export class ReservationListComponent implements OnInit {
   }
 
   loadReservations(): void {
-    this.reservations = this.reservationService.getReservations();
+    this.reservationService.getReservations().subscribe({
+      next: (reservations) => {
+        this.reservations = reservations;
+      },
+      error: (error) => {
+        console.error('Error loading reservations:', error);
+        this.reservations = [];
+      }
+    });
   }
 
-  deleteReservation(id: number): void {
+  deleteReservation(id: string): void {
     if (confirm('Are you sure you want to delete this reservation?')) {
-      this.reservationService.deleteReservation(id);
-      this.loadReservations();
+      this.reservationService.deleteReservation(id).subscribe({
+        next: () => {
+          this.loadReservations();
+        },
+        error: (error) => {
+          console.error('Error deleting reservation:', error);
+          alert('Failed to delete reservation. Please try again.');
+        }
+      });
     }
   }
 
-  editReservation(id: number): void {
+  editReservation(id: string): void {
     this.router.navigate(['/reservations', id, 'edit']);
   }
 
